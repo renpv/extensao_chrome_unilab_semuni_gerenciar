@@ -1,0 +1,41 @@
+{
+    "manifest_version": 3,
+    "name": "SemuniUnilab helper",
+    "version": "1.0",
+    "description": "Extensão para agilizar análise de trabalhos no sistema da Semana Universitária 2023, da Unilab",
+    "icons": {
+        "48": "icon48.png",
+        "128": "icon128.png"
+    },
+    // "background":{
+    //     "service_worker": "src/background.js"
+    // },
+    "options_page": "src/pages/options.html",
+    "action": {
+        "default_icon": {
+            "19": "icon48.png",
+            "38": "icon128.png"
+        },
+        "default_title": "exemplo nome extensao",
+        "default_popup": "index.html"
+    },
+    "permissions":[
+        "activeTab"   
+    ],
+    "content_scripts": [
+        {
+            "js": [
+                "src/main.js"
+            ],
+            "matches": [
+                "http://semuni.unilab.edu.br/gerenciar/trabalho_avaliacao.php*"
+            ]
+        }
+    ],
+    "web_accessible_resources": [
+        {
+          "resources": ["src/form-desconformidades.html", "src/saida-usuario.html", "src/msg-extra.html", "src/form-agradecimentos.html"],
+          "matches": ["<all_urls>"]
+        }
+      ]
+}
