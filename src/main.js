@@ -172,7 +172,8 @@ function montarMensagemAprovado(){
     body += `<h2>Parabéns! Seu trabalho foi aprovado para apresentação no XI Encontro de Iniciação Científica.</h2>`
     body += `<p>Para elaborar a sua apresentação, recomendamos que utilize o modelo padrão de slide/banner da Semuni, disponível no link: `
     body += `<a href="https://semanauniversitaria.unilab.edu.br/normas-de-submissao-de-trabalhos/" target="_blank">https://semanauniversitaria.unilab.edu.br/normas-de-submissao-de-trabalhos/</a>.</p>`
-    body += `<p>Pedimos que fique atento ao mapa de apresentação dos trabalhos que será divulgado, em data oportuna, na página: </p>`
+    body += `<p>Pedimos que fique atento ao mapa de apresentação dos trabalhos que será divulgado, em data oportuna, na página:`
+    body += `<a href="https://semanauniversitaria.unilab.edu.br/mapa-de-apresentacoes-dos-encontros/" target="_blank">https://semanauniversitaria.unilab.edu.br/mapa-de-apresentacoes-dos-encontros/</a>.</p>`
     body += saidaExtra()
     body += montarRodapeDuvidaPibic()
 
