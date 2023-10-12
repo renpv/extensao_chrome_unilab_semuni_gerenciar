@@ -4,6 +4,7 @@ window.onload = function(){
     importaFormDesconformidades()
     importaSaidaUsuario()
     importaMsgExtra()
+    buscarBolsistas()
     
     
     elStatus.addEventListener('change', (evt) =>{
@@ -17,7 +18,7 @@ window.onload = function(){
 function retornaMensagemCorpo(desconformidade=true){
     const opcao = document.getElementById('conf_avaliacao').value;
     if(opcao==1){//validado
-        return '<p>Mudamos o status do seu trabalho para <b>VALIDADO PELO ORIENTADOR</b></p>'
+        return '<h2>O status do seu trabalho foi alterado para <b> <b>VALIDADO PELO ORIENTADOR</b></h2>'
     } else if(opcao == 2){//Aguardando validação
         return '<p>Mudamos o status do seu trabalho para <b>Aguardando Validação</b></p>'
     }else if (opcao == 3){//Aprovado
@@ -30,7 +31,7 @@ function retornaMensagemCorpo(desconformidade=true){
     }else if (opcao == 6){ //Apresentado
         return montarMensagemApresentado()
     }else if (opcao == 7){ //Conformidade
-        return '<p>O status do seu trabalho foi alterado para CONFORMIDADE</p>'
+        return '<h2>O status do seu trabalho foi alterado para <b>CONFORMIDADE</b></h2>'
     }else if (opcao == 8){ // Nao Apresentado
         return montarMensagemNaoApresentado()
     }else if (opcao == 99){ //Rascunho
@@ -162,6 +163,56 @@ function importaMsgExtra(){
         })
 }
 
+async function buscarBolsistas(){
+    const elDetalhesEvento = document.querySelector('div.detalhes-evento')
+    const orientador = elDetalhesEvento.querySelector('b:nth-child(7)').textContent
+    console.log(orientador)
+    var requestOptions = {
+    method: 'GET',
+    redirect: 'follow'
+    };
+
+    let listagem = await fetch(`https://proppg.unilab.edu.br/forms/webservices/bolsistas.php?orientador=${orientador}`, requestOptions)
+    .then(response => response.json())
+    .then(result => {
+        var listagem = ``
+        let bolsistas = result.filter(el => el.edital.search('202') != -1)
+        if(bolsistas.length > 0){
+            listagem += `<table>` 
+            listagem += `<thead>` 
+            listagem += `<tr>` 
+            listagem += `<th>Edital</th>` 
+            listagem += `<th>Condicao</th>` 
+            listagem += `<th>Período cota</th>` 
+            listagem += `<th>Fomento</th>` 
+            listagem += `<th>Bolsista</th>` 
+            listagem += `</tr>` 
+            listagem += `</thead>` 
+            listagem += `<tbody>` 
+
+            bolsistas.forEach(bolsista => {
+                listagem += `<tr>` 
+                listagem += `<td>${bolsista.edital}</td>` 
+                listagem += `<td>${bolsista.condicao}</td>` 
+                listagem += `<td>${bolsista.dataInicioCota} a ` 
+                listagem += `${bolsista.dataFinalCota}</td>` 
+                listagem += `<td>${bolsista.fomento}</td>` 
+                listagem += `<td>${bolsista.bolsista}</td>` 
+                listagem += `</tr>` 
+                console.log(bolsista)
+            })
+            listagem += `</tbody>` 
+            listagem += `</table>` 
+        }else{
+            listagem += `<p>Nenhum bolsista encontrado em editais a partir de 2020</p>`
+        }
+        return listagem
+    })
+    .catch(error => console.log('error', error))
+    elDetalhesEvento.insertAdjacentHTML('beforeend', `<div>${listagem}</div>`)
+    
+}
+
 /**
  * 
  * MONTAGEM DE MENSAGENS PARA CADA SITUAÇÃO
@@ -169,7 +220,7 @@ function importaMsgExtra(){
 
 function montarMensagemAprovado(){
     let body = ``
-    body += `<h2>Parabéns! Seu trabalho foi aprovado para apresentação no XI Encontro de Iniciação Científica.</h2>`
+    body += `<h2>Parabéns! Seu trabalho foi aprovado para apresentação no <b>Encontro de Iniciação Científica</b>.</h2>`
     body += `<p>Para elaborar a sua apresentação, recomendamos que utilize o modelo padrão de slide/banner da Semuni, disponível no link: `
     body += `<a href="https://semanauniversitaria.unilab.edu.br/normas-de-submissao-de-trabalhos/" target="_blank">https://semanauniversitaria.unilab.edu.br/normas-de-submissao-de-trabalhos/</a>.</p>`
     body += `<p>Pedimos que fique atento ao mapa de apresentação dos trabalhos que será divulgado, em data oportuna, na página:`
@@ -182,8 +233,10 @@ function montarMensagemAprovado(){
 
 function montarMensagemReprovado(){
     let body = ``
-    body += `<p>Prezado(a) autor(a), conforme divulgado no site da SEMUNI, o Encontro de Iniciação Científica recebe resumo simples ou expandido de aluno bolsista e/ou voluntário cadastrados <b>em projetos de pesquisas institucionalizados</b> no âmbito do PIBIC/PIBITI/Unilab ou em Fluxo Contínuo.</p>`
-    body += `<p>Não conseguimos, portanto, relacionar o trabalho enviado a qualquer projeto cadastrado junto a PROPPG. Os interessados podem fazer as adequações necessárias no período de ajustes dos trabalhos, entre 31/10 a 07/11.</p>`
+    body += `<p>Prezado(a) autor(a), conforme divulgado no site da `
+    body += `<a href="https://semanauniversitaria.unilab.edu.br/encontros/#Encontro_de_IC" target="_blank">Semana Universitária</a> `
+    body += `o Encontro de Iniciação Científica recebe resumo simples ou expandido de aluno bolsista e/ou voluntário cadastrados <b>em projetos de pesquisas institucionalizados</b> no âmbito do PIBIC/PIBITI/Unilab ou em Fluxo Contínuo.</p>`
+    body += `<p>Não conseguimos, portanto, relacionar o trabalho enviado a qualquer projeto cadastrado junto a PROPPG.</p>`
     body += saidaExtra()
     body += montarRodapeDuvidaCpq()
 
@@ -225,7 +278,7 @@ function montarMensagemRascunho(){
 function montarMensagemFeedback(desconformidade=true){
     let msg = `<br>`
     let idTrabalho = document.querySelector('#conteudo h3 > span > b:nth-child(1)')
-    msg += `<img src="https://semanauniversitaria.unilab.edu.br/wp-content/uploads/2023/09/BotaoSubmissao_Pagina-16.png" alt="Sistema de submissão de trabalhos na Semana universitária" ><br>`
+    msg += `<div style="text-align: center; display: block;"><img width="500" src="https://proppg.unilab.edu.br/forms/logo/topo-encontro-de-ic.png" alt="Encontro de Iniciação Científica" ></div>`
     msg += retornaMensagemCorpo(desconformidade)
     document.getElementById('msm_avaliacao').innerText = msg
     document.querySelector('#MsgOutput p.saidaUsuario').innerHTML = msg
@@ -235,6 +288,7 @@ function montarRodapeDuvidaPibic(){
     let idTrabalho = document.querySelector('#conteudo h3 > span > b:nth-child(1)')
     msg = `<p>Para dúvidas e/ou esclarecimentos, você pode nos contactar através do e-mail `
     msg += `<a href="mailto:pibic@unilab.edu.br?subject=Dúvida sobre a submissão do trabalho ${idTrabalho.innerText}&body=Prezados(s), estou com uma dúvida sobre a submissão ao Encontro de Iniciação Científica.">pibic@unilab.edu.br</a></p>`
+    msg += `<div style="text-align: center; display: block;"><img width="400" src="https://proppg.unilab.edu.br/forms/logo/rodape-encontro-de-ic.png" alt="Unilab / Proppg / CPq" ></div>`
 
     return msg
 }
@@ -243,6 +297,7 @@ function montarRodapeDuvidaCpq(){
     let idTrabalho = document.querySelector('#conteudo h3 > span > b:nth-child(1)')
     msg = `<p>No caso de dúvidas, entrar em contato conosco através do e-mail `
     msg += `<a href="mailto:cpq@unilab.edu.br?subject=Dúvida sobre a submissão do trabalho ${idTrabalho.innerText}&body=Prezados(s), gostaria de obter mais informações sobre a REPROVAÇÃO do meu trabalho submetido ao Encontro de Iniciação Científica.">cpq@unilab.edu.br</a></p>`
+    msg += `<div style="text-align: center; display: block;"><img width="400" src="https://proppg.unilab.edu.br/forms/logo/rodape-encontro-de-ic.png" alt="Unilab / Proppg / CPq" ></div>`
 
     return msg
 }
