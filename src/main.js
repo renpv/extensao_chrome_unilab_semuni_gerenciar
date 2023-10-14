@@ -4,7 +4,8 @@ window.onload = function(){
     importaFormDesconformidades()
     importaSaidaUsuario()
     importaMsgExtra()
-    buscarBolsistas()
+    projetosDocente() //insere a tabela de projeto do docente, vazia
+    buscarProjetos() //Inicia o preenchimento da tabela
     
     
     elStatus.addEventListener('change', (evt) =>{
@@ -163,54 +164,93 @@ function importaMsgExtra(){
         })
 }
 
-async function buscarBolsistas(){
-    const elDetalhesEvento = document.querySelector('div.detalhes-evento')
-    const orientador = elDetalhesEvento.querySelector('b:nth-child(7)').textContent
-    console.log(orientador)
+/**
+ * 
+ * TABELA DE PROJETOS 
+ */
+
+function projetosDocente(){
+    const elReferencia = document.querySelector('div.detalhes-evento')
+
+    fetch(chrome.runtime.getURL("src/projetos-docente.html"))
+        .then(response => response.text())
+        .then(arquivoImportado => {
+            elReferencia.insertAdjacentHTML('beforeend', arquivoImportado);
+        })
+        .catch(error => {
+            console.error("Erro ao tentar importar o arquivo da extensão:", error)
+        })
+}
+
+const buscarBolsistas = async(idProjeto) => {
     var requestOptions = {
     method: 'GET',
     redirect: 'follow'
     };
 
-    let listagem = await fetch(`https://proppg.unilab.edu.br/forms/webservices/bolsistas.php?orientador=${orientador}`, requestOptions)
+    let bolsistas = await fetch(`https://proppg.unilab.edu.br/forms/webservices/bolsistas.php?idProjeto=${idProjeto}`, requestOptions)
     .then(response => response.json())
     .then(result => {
         var listagem = ``
-        let bolsistas = result.filter(el => el.edital.search('202') != -1)
-        if(bolsistas.length > 0){
-            listagem += `<table>` 
+            listagem += `<table class="table table-sm table-hover" style="max-width: 100%;">` 
             listagem += `<thead>` 
-            listagem += `<tr>` 
-            listagem += `<th>Edital</th>` 
-            listagem += `<th>Condicao</th>` 
-            listagem += `<th>Período cota</th>` 
-            listagem += `<th>Fomento</th>` 
-            listagem += `<th>Bolsista</th>` 
-            listagem += `</tr>` 
+            listagem += ` <tr>` 
+            listagem += `  <th>Bolsista</th>`
+            listagem += `  <th>Condição</th>` 
+            listagem += `  <th>Fomento</th>` 
+            listagem += `  <th>Vigência</th>` 
+            listagem += ` </tr>` 
             listagem += `</thead>` 
             listagem += `<tbody>` 
-
-            bolsistas.forEach(bolsista => {
+            result.forEach(bolsista => {
                 listagem += `<tr>` 
-                listagem += `<td>${bolsista.edital}</td>` 
-                listagem += `<td>${bolsista.condicao}</td>` 
-                listagem += `<td>${bolsista.dataInicioCota} a ` 
-                listagem += `${bolsista.dataFinalCota}</td>` 
-                listagem += `<td>${bolsista.fomento}</td>` 
-                listagem += `<td>${bolsista.bolsista}</td>` 
+                listagem += `  <td>${bolsista.bolsista}</td>` 
+                listagem += `  <td>${bolsista.condicao}</td>` 
+                listagem += `  <td>${bolsista.fomento}</td>` 
+                listagem += `  <td>${bolsista.dataInicioCota} a ${bolsista.dataFinalCota}</td>` 
                 listagem += `</tr>` 
-                console.log(bolsista)
             })
             listagem += `</tbody>` 
-            listagem += `</table>` 
+            listagem += `</table>`
+            document.querySelector(`#projeto_${idProjeto}`).insertAdjacentHTML('afterbegin',listagem)
+        })
+        .catch(error => console.log('error', error))
+}
+
+async function buscarProjetos(){
+    const elDetalhesEvento = document.querySelector('div.detalhes-evento')
+    const orientador = elDetalhesEvento.querySelector('b:nth-child(7)')
+    var requestOptions = {
+    method: 'GET',
+    redirect: 'follow'
+    };
+
+    let listagem = await fetch(`https://proppg.unilab.edu.br/forms/webservices/projetos.php?orientador=${orientador.textContent}`, requestOptions)
+    .then(response => response.json())
+    .then(result => {
+        var listagem = ``
+        let projetos = result.filter(el => el.codEdital.search('202') != -1)
+        if(projetos.length > 0){
+            projetos.forEach(projeto => {
+                let anoFinal = projeto.dataFinal.substr(projeto.dataFinal.length-4,4)
+                listagem = ``
+                listagem += `<div class="card mt-3 border-primary ">`
+                listagem += `<div class="card-header text-white font-weight-bolder bg-primary p-2">${projeto.codEdital} `
+                listagem += `<span class="badge badge-dark">${anoFinal > 2023 ? 'Simples' : 'Expandido'}</span></div>`
+                listagem += `<div class="card-body p-2">`
+                listagem += `    <h2 class="card-text my-2">${projeto.titulo} (${projeto.dataInicio} a ${projeto.dataFinal})</h2>`
+                listagem += `<div id="projeto_${projeto.idProjeto}"></div>`
+                listagem += `</div>`
+                listagem += `</div>`
+                document.querySelector('#projetos-docente').insertAdjacentHTML('afterbegin', `${listagem}`)
+                buscarBolsistas(projeto.idProjeto)
+            })
         }else{
             listagem += `<p>Nenhum bolsista encontrado em editais a partir de 2020</p>`
         }
-        return listagem
+        orientador.insertAdjacentHTML('afterend', `<span class="badge badge-pill badge-danger ml-2 px-2">${projetos.length} projetos</span>`)
     })
     .catch(error => console.log('error', error))
-    elDetalhesEvento.insertAdjacentHTML('beforeend', `<div>${listagem}</div>`)
-    
 }
 
 /**

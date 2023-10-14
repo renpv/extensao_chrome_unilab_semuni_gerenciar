@@ -31,7 +31,13 @@
     ],
     "web_accessible_resources": [
         {
-          "resources": ["src/form-desconformidades.html", "src/saida-usuario.html", "src/msg-extra.html", "src/form-agradecimentos.html"],
+          "resources": [
+            "src/form-desconformidades.html", 
+            "src/saida-usuario.html", 
+            "src/msg-extra.html", 
+            "src/form-agradecimentos.html",
+            "src/projetos-docente.html"
+        ],
           "matches": ["<all_urls>"]
         }
       ]
