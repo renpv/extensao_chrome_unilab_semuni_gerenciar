@@ -7,6 +7,9 @@
         "48": "icon48.png",
         "128": "icon128.png"
     },
+    "background": {
+        "service_worker": "background.js"
+      },
     "options_page": "src/pages/options.html",
     "action": {
         "default_icon": {
@@ -17,16 +20,16 @@
         "default_popup": "index.html"
     },
     "permissions":[
-        "activeTab"   
+        "activeTab", "scripting"
     ],
     "content_scripts": [
         {
-            "js": [
-                "src/main.js"
-            ],
-            "matches": [
-                "http://semuni.unilab.edu.br/gerenciar/trabalho_avaliacao.php*"
-            ]
+            "js": ["src/js/gerenciar/trabalho_avaliacao.js"],
+            "matches": ["http://semuni.unilab.edu.br/gerenciar/trabalho_avaliacao.php*"]
+        },
+        {
+            "js": ["src/js/gerenciar/relatorio_geral_trabalhos.js"],
+            "matches": ["http://semuni.unilab.edu.br/gerenciar/relatorio_geral_trabalhos.php"]
         }
     ],
     "web_accessible_resources": [
