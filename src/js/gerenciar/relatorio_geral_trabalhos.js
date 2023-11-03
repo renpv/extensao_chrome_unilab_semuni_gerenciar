@@ -24,7 +24,7 @@ function inserirBotaoBaixarPlanilha(){
 
     const elFilter = document.querySelector('#trabalhos_filter')
     const elButton = document.createElement("button");
-    elButton.textContent = 'Baixar Planilha';
+    elButton.textContent = 'Relatório em CSV';
     elButton.classList.add('dois')
     elButton.classList.add('botao')
     elButton.classList.add('b-sucesso')
